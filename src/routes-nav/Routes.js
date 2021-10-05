@@ -10,7 +10,7 @@ function Routes() {
     <div>
       <Switch>
         <Route exact path="/">
-          <h1>Home</h1>
+          <h1>Magnetik</h1>
         </Route>
         <Route exact path="/login">
           <h1>Login</h1>

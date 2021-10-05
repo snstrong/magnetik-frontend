@@ -3,6 +3,8 @@ import Routes from "./routes-nav/Routes";
 import { BrowserRouter } from "react-router-dom";
 import jwt from "jsonwebtoken";
 
+import Navigation from "./routes-nav/Navigation";
+
 import "./App.css";
 
 /** Magnetik Application
@@ -57,14 +59,18 @@ function App() {
   function logout() {
     setCurrentUser(null);
     setToken(null);
+    console.log("logged out");
   }
 
   if (!isLoaded) return <h1>Loading...</h1>;
 
   return (
-    <BrowserRouter>
-      <Routes />
-    </BrowserRouter>
+    <div className="App">
+      <BrowserRouter>
+        <Navigation logout={logout} />
+        <Routes />
+      </BrowserRouter>
+    </div>
   );
 }
 
