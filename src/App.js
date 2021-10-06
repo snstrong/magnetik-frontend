@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Routes from "./routes-nav/Routes";
 import { BrowserRouter } from "react-router-dom";
 import jwt from "jsonwebtoken";
-
+import MagnetikApi from "./api/MagnetikApi";
 import Navigation from "./routes-nav/Navigation";
 
 import "./App.css";
@@ -68,7 +68,7 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Navigation logout={logout} />
-        <Routes />
+        <Routes login={login} register={signUp} />
       </BrowserRouter>
     </div>
   );

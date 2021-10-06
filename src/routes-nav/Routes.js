@@ -1,9 +1,11 @@
 import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
+import RegisterForm from "../auth/RegisterForm";
+import LoginForm from "../auth/LoginForm";
 
 /** Site-wide routes */
 
-function Routes() {
+function Routes({ login, register }) {
   console.debug("Routes");
 
   return (
@@ -13,10 +15,10 @@ function Routes() {
           <h1>Magnetik</h1>
         </Route>
         <Route exact path="/login">
-          <h1>Login</h1>
+          <LoginForm login={login} />
         </Route>
         <Route exact path="/signup">
-          <h1>Sign Up</h1>
+          <RegisterForm register={register} />
         </Route>
         <Route exact path="/profile">
           <h1>Profile</h1>
