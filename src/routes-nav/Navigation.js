@@ -58,7 +58,7 @@ function Navigation({ logout }) {
         <span className="navbar-toggler-icon"></span>
       </button>
       <div className="collapse navbar-collapse" id="navbarContent">
-        {loggedOutNav()}
+        {loggedInNav()}
       </div>
     </nav>
   );
