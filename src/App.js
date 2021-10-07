@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import jwt from "jsonwebtoken";
 import MagnetikApi from "./api/MagnetikApi";
 import Navigation from "./routes-nav/Navigation";
+import UserContext from "./auth/UserContext";
 
 import "./App.css";
 
@@ -25,29 +26,42 @@ function App() {
 
   useEffect(
     function loadUserInfo() {
-      console.debug("App useEffect loadUserInfo");
+      console.debug("App useEffect loadUserInfo", "token=", token);
       // TODO: async function getCurrentUser(), userContext
-      setIsLoaded(true);
+      async function getCurrentUser() {
+        if (token) {
+          try {
+            let { username } = jwt.decode(token);
+            MagnetikApi.token = token;
+            let currUser = await MagnetikApi.getCurrentUser(username);
+            setCurrentUser(currUser);
+          } catch (err) {
+            console.error("App loadUserInfo: problem loading", err);
+            setCurrentUser(null);
+          }
+        }
+        setIsLoaded(true);
+      }
+      setIsLoaded(false);
+      getCurrentUser();
     },
     [token]
   );
 
   async function signUp(signUpData) {
     try {
-      // TODO: api helper method for signup, signup form
-      let userToken = undefined;
+      let userToken = await MagnetikApi.register(signUpData);
       setToken(userToken);
       return { success: true };
     } catch (errors) {
       console.error("signup failed", errors);
-      return { succes: false, errors };
+      return { success: false, errors };
     }
   }
 
   async function login(loginData) {
     try {
-      // TODO: api helper method for login, login form
-      let userToken = undefined;
+      let userToken = await MagnetikApi.login(loginData);
       setToken(userToken);
       return { success: true };
     } catch (errors) {
@@ -67,8 +81,10 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Navigation logout={logout} />
-        <Routes login={login} register={signUp} />
+        <UserContext.Provider value={{ currentUser, setCurrentUser }}>
+          <Navigation logout={logout} />
+          <Routes login={login} register={signUp} />
+        </UserContext.Provider>
       </BrowserRouter>
     </div>
   );

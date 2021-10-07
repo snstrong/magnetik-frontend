@@ -2,11 +2,16 @@ import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import RegisterForm from "../auth/RegisterForm";
 import LoginForm from "../auth/LoginForm";
+import UserContext from "../auth/UserContext";
 
 /** Site-wide routes */
 
 function Routes({ login, register }) {
-  console.debug("Routes");
+  console.debug(
+    "Routes",
+    `login=${typeof login}`,
+    `register=${typeof register}`
+  );
 
   return (
     <div>
