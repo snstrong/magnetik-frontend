@@ -7,7 +7,7 @@ function Navigation({ logout }) {
   console.debug("Navigation", "currentUser=", currentUser);
   function loggedInNav() {
     return (
-      <ul className="navbar-nav mr-auto">
+      <ul className="navbar-nav me-auto mb-2 mb-lg-0">
         <li className="nav-item">
           <NavLink className="nav-link" to="./writespace">
             Writespace
@@ -29,7 +29,7 @@ function Navigation({ logout }) {
 
   function loggedOutNav() {
     return (
-      <ul className="navbar-nav mr-auto">
+      <ul className="navbar-nav me-auto mb-2 mb-lg-0">
         <li className="nav-item">
           <NavLink className="nav-link" to="/signup">
             Sign Up
@@ -45,23 +45,25 @@ function Navigation({ logout }) {
   }
 
   return (
-    <nav className="Navigation navbar navbar-expand-lg navbar-light bg-light px-3">
-      <NavLink className="navbar-brand" to="/">
-        Magnetik
-      </NavLink>
-      <button
-        className="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarContent"
-        aria-controls="navbarContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span className="navbar-toggler-icon"></span>
-      </button>
-      <div className="collapse navbar-collapse" id="navbarContent">
-        {currentUser ? loggedInNav() : loggedOutNav()}
+    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <div className="container-fluid">
+        <a className="navbar-brand" href="/">
+          Magnetik
+        </a>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarSupportedContent">
+          {currentUser ? loggedInNav() : loggedOutNav()}
+        </div>
       </div>
     </nav>
   );
