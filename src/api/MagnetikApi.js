@@ -65,6 +65,11 @@ class MagnetikApi {
     let res = await this.request(`users/${username}`, patchData, "patch");
     return res.user;
   }
+
+  static async getWordList() {
+    let res = await this.request(`writespace`);
+    return res.wordList;
+  }
 }
 
 export default MagnetikApi;
