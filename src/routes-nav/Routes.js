@@ -3,6 +3,7 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import RegisterForm from "../auth/RegisterForm";
 import LoginForm from "../auth/LoginForm";
 import ProfileForm from "../profiles/ProfileForm";
+import Writespace from "../writespace/Writespace";
 import UserContext from "../auth/UserContext";
 
 /** Site-wide routes */
@@ -30,7 +31,7 @@ function Routes({ login, register }) {
           <ProfileForm />
         </Route>
         <Route exact path="/writespace">
-          <h1>Writespace</h1>
+          <Writespace />
         </Route>
         <Redirect to="/" />
       </Switch>
