@@ -51,27 +51,37 @@ function Writespace() {
           width={window.innerWidth}
           height={window.innerHeight}
         />
+        {/* TODO: Refactor this as function iterating over objects in wordTiles */}
         {wordList.map((wordObj) => {
           return (
             <Group
               draggable
               id={`${wordObj.id}`}
               key={`${wordObj.id}`}
-              x={20}
-              y={Math.random() * (window.innerHeight - 10)}
+              x={Math.random() * (window.innerWidth - 20)}
+              y={Math.random() * (window.innerHeight - 20)}
             >
               <Rect
-                width={wordObj.word.length * 11}
-                height={35}
+                width={
+                  wordObj.word.length <= 2
+                    ? wordObj.word.length * 15
+                    : wordObj.word.length * 12
+                }
+                height={30}
                 stroke="#555"
                 fill="white"
               />
               <Text
                 text={wordObj.word}
+                width={
+                  wordObj.word.length <= 2
+                    ? wordObj.word.length * 16
+                    : wordObj.word.length * 12
+                }
                 align="center"
-                padding={5}
-                fontSize={14}
+                fontSize={16}
                 fontFamily="monospace"
+                offsetY={-8}
               />
             </Group>
           );
