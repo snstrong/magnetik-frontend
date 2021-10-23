@@ -1,91 +1,159 @@
 import { useState, useEffect } from "react";
 import MagnetikApi from "../api/MagnetikApi";
 import { Stage, Group, Layer, Text, Rect } from "react-konva";
-import { Portal } from "react-konva-utils";
+// import { Portal } from "react-konva-utils";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 /** TODO:
- * - Update state when x,y of word tile changes
- * - Handlers for drag events (see https://codesandbox.io/s/github/konvajs/site/tree/master/react-demos/basic_demo?from-embed=&file=/src/index.js)
- * - Saving to LocalStorage and/or db
+ * - Saving to db for logged-in user
  * - Export as image
  * - Separate layers for poem and unused word tiles with Portal
  * - Improve initial spacing between tiles
- * - Improve sizing for word tiles
- * - Make size of Stage dynamic
+ * - Improve Stage sizing (evt listener for window size change, add mins)
+ * - Option to fetch more words or shuffle positions
  */
 
 function Writespace() {
-  const [wordList, setWordList] = useState(null);
-  const [wordTiles, setWordTiles] = useState(null);
+  const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
+  const [konvaStyles, setKonvaStyles] = useState({
+    stageBgFill: "#d4dddd",
+    tileBgFill: "white",
+    tileStroke: "#555",
+    tileFontSize: 16,
+    tileHeight: 30,
+    stageWidth: window.innerWidth,
+    stageHeight: window.innerHeight,
+  });
 
-  useEffect(function loadWordList() {
-    console.debug("Writespace useEffect loadWordList");
-    async function fetchWordList() {
-      try {
-        let wl = await MagnetikApi.getWordList();
-        setWordList(wl);
-        let tiles = {};
-        for (let wordObj of wl) {
-          let { id, word } = wordObj;
-          tiles[id] = {
-            word: word,
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-          };
-        }
-        setWordTiles({ ...tiles });
-      } catch (err) {
-        console.error("Writespace useEffect fetchWordList", err);
-      }
+  function calcTileSize(wordLength) {
+    return wordLength <= 2
+      ? wordLength * konvaStyles.tileFontSize
+      : Math.round(wordLength * konvaStyles.tileFontSize * 0.75);
+  }
+
+  function tileCoord(dimension) {
+    let min = 10;
+    let max = dimension - 10;
+    return Math.floor(Math.random() * (max - min) + min);
+  }
+
+  function makeTileObj({ id, word }) {
+    return {
+      word: word,
+      id: id,
+      x: tileCoord(konvaStyles.stageWidth),
+      y: tileCoord(konvaStyles.stageHeight),
+      width: calcTileSize(word.length),
+      isDragging: false,
+    };
+  }
+
+  const handleDragStart = (e) => {
+    const id = e.target.id();
+    console.debug("New x, y:", e.target.x(), e.target.y());
+    const tiles = {
+      ...JSON.parse(wordTiles),
+      [id]: {
+        ...JSON.parse(wordTiles)[id],
+        isDragging: true,
+      },
+    };
+    console.debug("Tiles: ", tiles);
+
+    setWordTiles(JSON.stringify({ ...tiles }));
+  };
+
+  const handleDragEnd = (e) => {
+    const id = e.target.id();
+    const newX = e.target.x();
+    const newY = e.target.y();
+    console.debug("New x, y:", e.target.x(), e.target.y());
+    const tiles = {
+      ...JSON.parse(wordTiles),
+      [id]: {
+        ...JSON.parse(wordTiles)[id],
+        x: newX,
+        y: newY,
+        isDragging: false,
+      },
+    };
+    console.debug("Tiles: ", tiles);
+
+    setWordTiles(JSON.stringify({ ...tiles }));
+  };
+
+  function renderWordTiles(tiles) {
+    let tileArr = [];
+    for (let id in tiles) {
+      tileArr.push(
+        <Group
+          draggable
+          id={`${id}`}
+          key={`${id}`}
+          x={tiles[id]["x"]}
+          y={tiles[id]["y"]}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          scaleX={tiles[id]["isDragging"] ? 1.05 : 1}
+          scaleY={tiles[id]["isDragging"] ? 1.05 : 1}
+        >
+          <Rect
+            width={tiles[id]["width"]}
+            height={konvaStyles.tileHeight}
+            fill="white"
+            stroke="#555"
+          />
+          <Text
+            text={tiles[id]["word"]}
+            width={tiles[id]["width"]}
+            align="center"
+            fontSize={konvaStyles.tileFontSize}
+            fontFamily="monospace"
+            offsetY={-8}
+          />
+        </Group>
+      );
     }
-    fetchWordList();
-  }, []);
+    return tileArr;
+  }
 
-  if (!wordList || !wordTiles) return <h1>Loading...</h1>;
+  async function fetchWordList() {
+    try {
+      let wordList = await MagnetikApi.getWordList();
+      return wordList;
+    } catch (err) {
+      console.error("Writespace fetchWordList", err);
+    }
+  }
+
+  useEffect(
+    function loadWordList() {
+      console.debug("Writespace useEffect loadWordList");
+      if (!wordTiles) {
+        fetchWordList().then((res) => {
+          let tiles = {};
+          for (let wordObj of res) {
+            let tile = makeTileObj(wordObj);
+            tiles[wordObj["id"]] = tile;
+          }
+          setWordTiles(JSON.stringify({ ...tiles }));
+        });
+      }
+    },
+    [wordTiles, setWordTiles]
+  );
+
+  if (!wordTiles) return <h1>Loading...</h1>;
 
   return (
     <Stage width={window.innerWidth} height={window.innerHeight}>
       <Layer>
         <Rect
-          fill="#b6bbc2"
+          fill={konvaStyles.stageBgFill || "#b6bbc2"}
           width={window.innerWidth}
           height={window.innerHeight}
         />
-        {/* TODO: Refactor this as function iterating over objects in wordTiles */}
-        {wordList.map((wordObj) => {
-          return (
-            <Group
-              draggable
-              id={`${wordObj.id}`}
-              key={`${wordObj.id}`}
-              x={Math.random() * (window.innerWidth - 20)}
-              y={Math.random() * (window.innerHeight - 20)}
-            >
-              <Rect
-                width={
-                  wordObj.word.length <= 2
-                    ? wordObj.word.length * 15
-                    : wordObj.word.length * 12
-                }
-                height={30}
-                stroke="#555"
-                fill="white"
-              />
-              <Text
-                text={wordObj.word}
-                width={
-                  wordObj.word.length <= 2
-                    ? wordObj.word.length * 16
-                    : wordObj.word.length * 12
-                }
-                align="center"
-                fontSize={16}
-                fontFamily="monospace"
-                offsetY={-8}
-              />
-            </Group>
-          );
-        })}
+        {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
       </Layer>
     </Stage>
   );
