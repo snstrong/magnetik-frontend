@@ -10,7 +10,8 @@ import useLocalStorage from "../hooks/useLocalStorage";
  * - Separate layers for poem and unused word tiles with Portal
  * - Improve initial spacing between tiles
  * - Improve Stage sizing (evt listener for window size change, add mins)
- * - Option to fetch more words or shuffle positions
+ * - Options to fetch more words, shuffle positions, clear and get a new word list
+ * - Allow user to update styles
  */
 
 function Writespace() {
@@ -58,7 +59,6 @@ function Writespace() {
         isDragging: true,
       },
     };
-    console.debug("Tiles: ", tiles);
 
     setWordTiles(JSON.stringify({ ...tiles }));
   };
@@ -77,7 +77,6 @@ function Writespace() {
         isDragging: false,
       },
     };
-    console.debug("Tiles: ", tiles);
 
     setWordTiles(JSON.stringify({ ...tiles }));
   };
@@ -126,22 +125,19 @@ function Writespace() {
     }
   }
 
-  useEffect(
-    function loadWordList() {
-      console.debug("Writespace useEffect loadWordList");
-      if (!wordTiles) {
-        fetchWordList().then((res) => {
-          let tiles = {};
-          for (let wordObj of res) {
-            let tile = makeTileObj(wordObj);
-            tiles[wordObj["id"]] = tile;
-          }
-          setWordTiles(JSON.stringify({ ...tiles }));
-        });
-      }
-    },
-    [wordTiles, setWordTiles]
-  );
+  useEffect(function loadWordList() {
+    console.debug("Writespace useEffect loadWordList");
+    if (!wordTiles) {
+      fetchWordList().then((res) => {
+        let tiles = {};
+        for (let wordObj of res) {
+          let tile = makeTileObj(wordObj);
+          tiles[wordObj["id"]] = tile;
+        }
+        setWordTiles(JSON.stringify({ ...tiles }));
+      });
+    }
+  }, []);
 
   if (!wordTiles) return <h1>Loading...</h1>;
 

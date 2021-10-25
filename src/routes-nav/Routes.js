@@ -1,5 +1,6 @@
 import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
+import Homepage from "../homepage/Homepage";
 import RegisterForm from "../auth/RegisterForm";
 import LoginForm from "../auth/LoginForm";
 import ProfileForm from "../profiles/ProfileForm";
@@ -19,7 +20,7 @@ function Routes({ login, register }) {
     <div>
       <Switch>
         <Route exact path="/">
-          <h1>Magnetik</h1>
+          <Homepage />
         </Route>
         <Route exact path="/login">
           <LoginForm login={login} />
