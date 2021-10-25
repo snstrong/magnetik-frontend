@@ -32,4 +32,11 @@
 
 .btn-primary {
   background-color: darkcyan;
+  border-color: darkcyan;
+  opacity: 0.9;
+}
+
+.btn-primary:hover {
+  background-color: #006666;
+  border-color: #006666;
 }

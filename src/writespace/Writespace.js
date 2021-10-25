@@ -1,20 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import MagnetikApi from "../api/MagnetikApi";
 import { Stage, Group, Layer, Text, Rect } from "react-konva";
 // import { Portal } from "react-konva-utils";
 import useLocalStorage from "../hooks/useLocalStorage";
+import UserContext from "../auth/UserContext";
+import Alert from "../common/Alert";
 
 /** TODO:
  * - Saving to db for logged-in user
+ * - Allow user to name writespace, provide default "Untitled [1,2...]"
  * - Export as image
  * - Separate layers for poem and unused word tiles with Portal
  * - Improve initial spacing between tiles
  * - Improve Stage sizing (evt listener for window size change, add mins)
+ * - Resize font, tiles for small screens
  * - Options to fetch more words, shuffle positions, clear and get a new word list
  * - Allow user to update styles
  */
 
 function Writespace() {
+  const { currentUser } = useContext(UserContext);
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
   const [konvaStyles, setKonvaStyles] = useState({
     stageBgFill: "#d4dddd",
@@ -25,6 +30,8 @@ function Writespace() {
     stageWidth: window.innerWidth,
     stageHeight: window.innerHeight,
   });
+  const [reset, setReset] = useState(false);
+  const [alert, setAlert] = useState(null);
 
   function calcTileSize(wordLength) {
     return wordLength <= 2
@@ -33,8 +40,8 @@ function Writespace() {
   }
 
   function tileCoord(dimension) {
-    let min = 10;
-    let max = dimension - 10;
+    let min = 20;
+    let max = dimension - 20;
     return Math.floor(Math.random() * (max - min) + min);
   }
 
@@ -51,7 +58,6 @@ function Writespace() {
 
   const handleDragStart = (e) => {
     const id = e.target.id();
-    console.debug("New x, y:", e.target.x(), e.target.y());
     const tiles = {
       ...JSON.parse(wordTiles),
       [id]: {
@@ -67,7 +73,6 @@ function Writespace() {
     const id = e.target.id();
     const newX = e.target.x();
     const newY = e.target.y();
-    console.debug("New x, y:", e.target.x(), e.target.y());
     const tiles = {
       ...JSON.parse(wordTiles),
       [id]: {
@@ -125,33 +130,90 @@ function Writespace() {
     }
   }
 
-  useEffect(function loadWordList() {
-    console.debug("Writespace useEffect loadWordList");
-    if (!wordTiles) {
-      fetchWordList().then((res) => {
-        let tiles = {};
-        for (let wordObj of res) {
-          let tile = makeTileObj(wordObj);
-          tiles[wordObj["id"]] = tile;
-        }
-        setWordTiles(JSON.stringify({ ...tiles }));
-      });
+  useEffect(
+    function loadWordList() {
+      // console.debug("Writespace useEffect loadWordList wordTiles=", wordTiles);
+      if (!wordTiles || reset === true) {
+        fetchWordList().then((res) => {
+          let tiles = {};
+          for (let wordObj of res) {
+            let tile = makeTileObj(wordObj);
+            tiles[wordObj["id"]] = tile;
+          }
+          setWordTiles(JSON.stringify({ ...tiles }));
+        });
+      }
+      setReset(false);
+    },
+    [reset]
+  );
+
+  function scramble() {
+    const tiles = { ...JSON.parse(wordTiles) };
+
+    for (let id in tiles) {
+      tiles[id] = {
+        ...JSON.parse(wordTiles)[id],
+        x: tileCoord(konvaStyles.stageWidth),
+        y: tileCoord(konvaStyles.stageHeight),
+      };
     }
-  }, []);
+    setWordTiles(JSON.stringify({ ...tiles }));
+  }
 
   if (!wordTiles) return <h1>Loading...</h1>;
 
   return (
-    <Stage width={window.innerWidth} height={window.innerHeight}>
-      <Layer>
-        <Rect
-          fill={konvaStyles.stageBgFill || "#b6bbc2"}
-          width={window.innerWidth}
-          height={window.innerHeight}
-        />
-        {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
-      </Layer>
-    </Stage>
+    <div className="Writespace">
+      <div
+        className="Writespace-options p-3 container-fluid"
+        style={{ backgroundColor: "#8da5a5" }}
+      >
+        <div className="row">
+          {currentUser && (
+            <button
+              type="submit"
+              className="btn btn-primary col-2 col-md-4 col-sm-6"
+              onClick={() => {
+                setAlert(true);
+                setTimeout(() => setAlert(false), 2000);
+              }}
+            >
+              Save
+            </button>
+          )}
+          <button
+            type="reset"
+            className="btn btn-secondary col-2 col-md-4 col-sm-6"
+            onClick={() => setReset(true)}
+          >
+            Reset
+          </button>
+          <button
+            type="reset"
+            className="btn btn-light col-2 col-md-4 col-sm-6"
+            onClick={scramble}
+          >
+            Scramble
+          </button>
+        </div>
+        {alert && (
+          <Alert
+            messages={["Currently unavailable. Please try again later."]}
+          ></Alert>
+        )}
+      </div>
+      <Stage width={window.innerWidth} height={window.innerHeight}>
+        <Layer>
+          <Rect
+            fill={konvaStyles.stageBgFill || "#b6bbc2"}
+            width={window.innerWidth}
+            height={window.innerHeight}
+          />
+          {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
+        </Layer>
+      </Stage>
+    </div>
   );
 }
 

@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import MagnetikApi from "./api/MagnetikApi";
 import Navigation from "./routes-nav/Navigation";
 import UserContext from "./auth/UserContext";
+import useLocalStorage from "./hooks/useLocalStorage";
 
 import "./App.css";
 
@@ -17,23 +18,26 @@ import "./App.css";
  * - login
  * - logout
  * - signUp
+ * Effects:
+ * - loadUserInfo
  */
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useLocalStorage("token");
 
   useEffect(
     function loadUserInfo() {
-      console.debug("App useEffect loadUserInfo", "token=", token);
+      // console.debug("App useEffect loadUserInfo", "token=", token);
       async function getCurrentUser() {
         if (token) {
           try {
-            let { username } = jwt.decode(token);
-            MagnetikApi.token = token;
+            let { username } = jwt.decode(JSON.parse(token));
+            MagnetikApi.token = JSON.parse(token);
             let currUser = await MagnetikApi.getCurrentUser(username);
-            setCurrentUser(currUser);
+
+            setCurrentUser({ ...currUser });
           } catch (err) {
             console.error("App loadUserInfo: problem loading", err);
             setCurrentUser(null);
@@ -50,7 +54,7 @@ function App() {
   async function signUp(signUpData) {
     try {
       let userToken = await MagnetikApi.register(signUpData);
-      setToken(userToken);
+      setToken(JSON.stringify(userToken));
       return { success: true };
     } catch (errors) {
       console.error("signup failed", errors);
@@ -61,7 +65,7 @@ function App() {
   async function login(loginData) {
     try {
       let userToken = await MagnetikApi.login(loginData);
-      setToken(userToken);
+      setToken(JSON.stringify(userToken));
       return { success: true };
     } catch (errors) {
       console.error("login failed", errors);
@@ -72,7 +76,6 @@ function App() {
   function logout() {
     setCurrentUser(null);
     setToken(null);
-    console.log("logged out");
   }
 
   if (!isLoaded) return <h1>Loading...</h1>;

@@ -4,7 +4,8 @@ import UserContext from "../auth/UserContext";
 
 function Navigation({ logout }) {
   const { currentUser } = useContext(UserContext);
-  console.debug("Navigation", "currentUser=", currentUser);
+  // console.debug("Navigation", "currentUser=", currentUser);
+
   function loggedInNav() {
     return (
       <ul className="navbar-nav me-auto mb-2 mb-lg-0">
@@ -30,6 +31,11 @@ function Navigation({ logout }) {
   function loggedOutNav() {
     return (
       <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+        <li className="nav-item">
+          <NavLink className="nav-link" to="./writespace">
+            Writespace
+          </NavLink>
+        </li>
         <li className="nav-item">
           <NavLink className="nav-link" to="/signup">
             Sign Up

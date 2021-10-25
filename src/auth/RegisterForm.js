@@ -37,7 +37,7 @@ function RegisterForm({ register }) {
     let res = await register(formData);
     if (res.success === true) {
       setFormData(INITIAL_STATE);
-      history.push(`/companies`);
+      history.push(`/writespace`);
     } else {
       console.error("Registration failed", res.errors);
     }

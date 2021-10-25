@@ -5,16 +5,16 @@ import RegisterForm from "../auth/RegisterForm";
 import LoginForm from "../auth/LoginForm";
 import ProfileForm from "../profiles/ProfileForm";
 import Writespace from "../writespace/Writespace";
-import UserContext from "../auth/UserContext";
+import ProtectedRoute from "./ProtectedRoute";
 
 /** Site-wide routes */
 
 function Routes({ login, register }) {
-  console.debug(
-    "Routes",
-    `login=${typeof login}`,
-    `register=${typeof register}`
-  );
+  // console.debug(
+  //   "Routes",
+  //   `login=${typeof login}`,
+  //   `register=${typeof register}`
+  // );
 
   return (
     <div>
@@ -28,9 +28,9 @@ function Routes({ login, register }) {
         <Route exact path="/signup">
           <RegisterForm register={register} />
         </Route>
-        <Route exact path="/profile">
+        <ProtectedRoute exact path="/profile">
           <ProfileForm />
-        </Route>
+        </ProtectedRoute>
         <Route exact path="/writespace">
           <Writespace />
         </Route>

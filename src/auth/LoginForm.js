@@ -31,7 +31,7 @@ function LoginForm({ login }) {
   async function handleSubmit(evt) {
     evt.preventDefault();
     let res = await login(formData);
-    res.success ? history.push("/companies") : console.error(res.errors);
+    res.success ? history.push("/writespace") : console.error(res.errors);
   }
 
   return (
