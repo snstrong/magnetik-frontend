@@ -63,8 +63,14 @@ function Writespace() {
     };
   }
 
+  async function setNewXY(tiles = {}) {
+    let res = await setWordTiles(JSON.stringify({ ...tiles }));
+    return true;
+  }
+
   const handleDragStart = (e) => {
     const id = e.target.id();
+    console.debug("Dragging ", JSON.parse(wordTiles)[id].word);
     const tiles = {
       ...JSON.parse(wordTiles),
       [id]: {
@@ -72,14 +78,20 @@ function Writespace() {
         isDragging: true,
       },
     };
-
     setWordTiles(JSON.stringify({ ...tiles }));
   };
 
-  const handleDragEnd = (e) => {
+  async function handleDragEnd(e) {
     const id = e.target.id();
     const newX = e.target.x();
     const newY = e.target.y();
+    console.debug("Dropping ", JSON.parse(wordTiles)[id].word);
+    console.debug(
+      "Old x,y=",
+      JSON.parse(wordTiles)[id].x,
+      JSON.parse(wordTiles)[id].y
+    );
+    console.debug("New x,y=", newX, newY);
     const tiles = {
       ...JSON.parse(wordTiles),
       [id]: {
@@ -89,9 +101,9 @@ function Writespace() {
         isDragging: false,
       },
     };
-
-    setWordTiles(JSON.stringify({ ...tiles }));
-  };
+    let res = await setNewXY(tiles);
+    console.log("setNewXY returned ", res);
+  }
 
   function renderWordTiles(tiles) {
     let tileArr = [];
