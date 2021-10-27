@@ -6,11 +6,11 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import UserContext from "../auth/UserContext";
 import Alert from "../common/Alert";
 import NewWritespaceForm from "./NewWritespaceForm";
+import "./Writespace.css";
 
 /** TODO:
  *
  * - Saving to db for logged-in user
- * - Allow user to name writespace, provide default "Untitled [1,2...]"
  * - Export as image
  * - Separate layers for poem and unused word tiles with Portal
  * - Improve initial spacing between tiles
@@ -25,15 +25,17 @@ function Writespace() {
   const { currentUser } = useContext(UserContext);
   // get writespace id somehow and use to set/retrieve tile data
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
-  const [konvaStyles, setKonvaStyles] = useState({
+
+  const INITIAL_KONVA_STYLES = {
     stageBgFill: "#d4dddd",
     tileBgFill: "white",
     tileStroke: "#555",
     tileFontSize: 16,
     tileHeight: 30,
-    stageWidth: Math.max([window.innerWidth, 1000]),
-    stageHeight: Math.max([window.innerHeight, 1000]),
-  });
+    stageWidth: 1000,
+    stageHeight: 1000,
+  };
+  const [konvaStyles, setKonvaStyles] = useState({ ...INITIAL_KONVA_STYLES });
   const [reset, setReset] = useState(false);
   const [alert, setAlert] = useState(null);
   const [displayForm, setDisplayForm] = useState(false);
@@ -45,8 +47,8 @@ function Writespace() {
   }
 
   function tileCoord(dimension) {
-    let min = 20;
-    let max = dimension - 20;
+    let min = 30;
+    let max = dimension;
     return Math.floor(Math.random() * (max - min) + min);
   }
 
@@ -54,8 +56,8 @@ function Writespace() {
     return {
       word: word,
       id: id,
-      x: tileCoord(konvaStyles.stageWidth),
-      y: tileCoord(konvaStyles.stageHeight),
+      x: tileCoord(Math.min(window.innerWidth, konvaStyles.stageWidth)),
+      y: tileCoord(Math.min(window.innerHeight, konvaStyles.stageHeight)),
       width: calcTileSize(word.length),
       isDragging: false,
     };
@@ -159,8 +161,8 @@ function Writespace() {
     for (let id in tiles) {
       tiles[id] = {
         ...JSON.parse(wordTiles)[id],
-        x: tileCoord(konvaStyles.stageWidth),
-        y: tileCoord(konvaStyles.stageHeight),
+        x: tileCoord(Math.min(window.innerWidth, konvaStyles.stageWidth)),
+        y: tileCoord(Math.min(window.innerHeight, konvaStyles.stageHeight)),
       };
     }
     setWordTiles(JSON.stringify({ ...tiles }));
@@ -172,8 +174,8 @@ function Writespace() {
       let writespaceData = {
         title: formData.title,
         username: currentUser.username,
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: konvaStyles.stageWidth,
+        height: konvaStyles.stageHeight,
       };
       let res = await MagnetikApi.createWritespace(writespaceData);
       return { success: true };
@@ -185,23 +187,25 @@ function Writespace() {
 
   if (!wordTiles) return <h1>Loading...</h1>;
 
+  window.addEventListener("resize", (evt) => {});
+
   return (
     <div className="Writespace">
       <div
         className="WritespaceToolbar p-3 container-fluid"
         style={{ backgroundColor: "#8da5a5" }}
       >
-        <div className="row">
+        <div className="row justify-content-center">
           {currentUser && (
             <button
-              className="btn btn-primary col-2 col-md-4 col-sm-6"
+              className="btn btn-primary col-6 col-sm-4 col-md-3 col-lg-2"
               onClick={() => {
-                // setAlert(true);
+                setAlert(true);
                 setDisplayForm(true);
-                // setTimeout(() => {
-                //   setAlert(false);
-                //   setDisplayForm(false);
-                // }, 2000);
+                setTimeout(() => {
+                  setAlert(false);
+                  setDisplayForm(false);
+                }, 2000);
               }}
             >
               Save
@@ -209,14 +213,14 @@ function Writespace() {
           )}
           <button
             type="reset"
-            className="btn btn-secondary col-2 col-md-4 col-sm-6"
+            className="btn btn-secondary col-6 col-sm-4 col-md-3 col-lg-2"
             onClick={() => setReset(true)}
           >
             Reset
           </button>
           <button
             type="reset"
-            className="btn btn-light col-2 col-md-4 col-sm-6"
+            className="btn btn-light col-6 col-sm-4 col-md-3 col-lg-2"
             onClick={scramble}
           >
             Scramble
@@ -234,16 +238,24 @@ function Writespace() {
           ></Alert>
         )}
       </div>
-      <Stage width={window.innerWidth} height={window.innerHeight}>
-        <Layer>
-          <Rect
-            fill={konvaStyles.stageBgFill || "#b6bbc2"}
-            width={window.innerWidth}
-            height={window.innerHeight}
-          />
-          {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
-        </Layer>
-      </Stage>
+      <div className="Stage-container">
+        <div className="Stage-wrapper">
+          <Stage
+            width={konvaStyles.stageWidth}
+            height={konvaStyles.stageHeight}
+          >
+            <Layer>
+              <Rect
+                fill={konvaStyles.stageBgFill || "#b6bbc2"}
+                width={konvaStyles.stageWidth}
+                height={konvaStyles.stageHeight}
+                opacity={0.95}
+              />
+              {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
+            </Layer>
+          </Stage>
+        </div>
+      </div>
     </div>
   );
 }

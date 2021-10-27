@@ -1,0 +1,17 @@
+.Writespace {
+  background-color: #8da5a5;
+  width: 100%;
+  height: max-content;
+}
+
+.Stage-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  height: max-content;
+}
+
+.Stage-wrapper {
+  width: fit-content;
+  height: max-content;
+}

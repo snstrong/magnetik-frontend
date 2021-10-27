@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { useHistory } from "react-router-dom";
+import Alert from "../common/Alert";
 
 function LoginForm({ login }) {
   const history = useHistory();
@@ -19,6 +20,7 @@ function LoginForm({ login }) {
   };
 
   let [formData, setFormData] = useState(INITIAL_STATE);
+  let [formErrors, setFormErrors] = useState([]);
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -30,13 +32,21 @@ function LoginForm({ login }) {
 
   async function handleSubmit(evt) {
     evt.preventDefault();
+    setFormErrors([]);
     let res = await login(formData);
-    res.success ? history.push("/writespace") : console.error(res.errors);
+    if (res.success === true) {
+      setFormData(INITIAL_STATE);
+      history.push(`/writespace`);
+    } else {
+      console.error("Login failed", res.errors);
+      setFormErrors(res.errors);
+    }
   }
 
   return (
     <div className="LoginForm container">
       <h2>Login</h2>
+      {formErrors.length ? <Alert type="danger" messages={formErrors} /> : null}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label" htmlFor="username">

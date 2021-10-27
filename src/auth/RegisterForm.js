@@ -12,6 +12,7 @@
 
 import { useState } from "react";
 import { useHistory } from "react-router-dom";
+import Alert from "../common/Alert";
 
 function RegisterForm({ register }) {
   const history = useHistory();
@@ -23,6 +24,7 @@ function RegisterForm({ register }) {
     email: "",
   };
   let [formData, setFormData] = useState(INITIAL_STATE);
+  let [formErrors, setFormErrors] = useState([]);
 
   const handleChange = (evt) => {
     const { name, value } = evt.target;
@@ -34,18 +36,21 @@ function RegisterForm({ register }) {
 
   async function handleSubmit(evt) {
     evt.preventDefault();
+    setFormErrors([]);
     let res = await register(formData);
     if (res.success === true) {
       setFormData(INITIAL_STATE);
       history.push(`/writespace`);
     } else {
       console.error("Registration failed", res.errors);
+      setFormErrors(res.errors);
     }
   }
 
   return (
     <div className="RegisterForm container">
       <h1>Sign Up</h1>
+      {formErrors.length ? <Alert type="danger" messages={formErrors} /> : null}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label" htmlFor="username">
