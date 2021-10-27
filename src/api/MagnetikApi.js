@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = process.env.MAGNETIK_APP_BASE_URL || "http://localhost:3001";
+const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
 
 /** API Class.
  *
@@ -69,6 +69,17 @@ class MagnetikApi {
   static async getWordList() {
     let res = await this.request(`writespace`);
     return res.wordList;
+  }
+
+  static async createWritespace(writespaceData) {
+    let res = await this.request(
+      `writespace/${writespaceData.username}`,
+      writespaceData,
+      "post"
+    );
+    console.debug("res=", res);
+    debugger;
+    return res;
   }
 }
 

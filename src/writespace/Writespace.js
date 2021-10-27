@@ -5,8 +5,10 @@ import { Stage, Group, Layer, Text, Rect } from "react-konva";
 import useLocalStorage from "../hooks/useLocalStorage";
 import UserContext from "../auth/UserContext";
 import Alert from "../common/Alert";
+import NewWritespaceForm from "./NewWritespaceForm";
 
 /** TODO:
+ *
  * - Saving to db for logged-in user
  * - Allow user to name writespace, provide default "Untitled [1,2...]"
  * - Export as image
@@ -14,12 +16,14 @@ import Alert from "../common/Alert";
  * - Improve initial spacing between tiles
  * - Improve Stage sizing (evt listener for window size change, add mins)
  * - Resize font, tiles for small screens
- * - Options to fetch more words, shuffle positions, clear and get a new word list
+ * - Option to fetch more words
  * - Allow user to update styles
+ * - Allow word grouping/multi select
  */
 
 function Writespace() {
   const { currentUser } = useContext(UserContext);
+  // get writespace id somehow and use to set/retrieve tile data
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
   const [konvaStyles, setKonvaStyles] = useState({
     stageBgFill: "#d4dddd",
@@ -27,11 +31,12 @@ function Writespace() {
     tileStroke: "#555",
     tileFontSize: 16,
     tileHeight: 30,
-    stageWidth: window.innerWidth,
-    stageHeight: window.innerHeight,
+    stageWidth: Math.max([window.innerWidth, 1000]),
+    stageHeight: Math.max([window.innerHeight, 1000]),
   });
   const [reset, setReset] = useState(false);
   const [alert, setAlert] = useState(null);
+  const [displayForm, setDisplayForm] = useState(false);
 
   function calcTileSize(wordLength) {
     return wordLength <= 2
@@ -161,22 +166,42 @@ function Writespace() {
     setWordTiles(JSON.stringify({ ...tiles }));
   }
 
+  async function createNewWritespace(formData) {
+    if (!currentUser) return;
+    try {
+      let writespaceData = {
+        title: formData.title,
+        username: currentUser.username,
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+      let res = await MagnetikApi.createWritespace(writespaceData);
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      return { success: false };
+    }
+  }
+
   if (!wordTiles) return <h1>Loading...</h1>;
 
   return (
     <div className="Writespace">
       <div
-        className="Writespace-options p-3 container-fluid"
+        className="WritespaceToolbar p-3 container-fluid"
         style={{ backgroundColor: "#8da5a5" }}
       >
         <div className="row">
           {currentUser && (
             <button
-              type="submit"
               className="btn btn-primary col-2 col-md-4 col-sm-6"
               onClick={() => {
-                setAlert(true);
-                setTimeout(() => setAlert(false), 2000);
+                // setAlert(true);
+                setDisplayForm(true);
+                // setTimeout(() => {
+                //   setAlert(false);
+                //   setDisplayForm(false);
+                // }, 2000);
               }}
             >
               Save
@@ -197,6 +222,12 @@ function Writespace() {
             Scramble
           </button>
         </div>
+        {displayForm && (
+          <NewWritespaceForm
+            createNewWritespace={createNewWritespace}
+            hide={displayForm}
+          />
+        )}
         {alert && (
           <Alert
             messages={["Currently unavailable. Please try again later."]}
