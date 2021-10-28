@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { NavLink } from "react-router-dom";
 import UserContext from "../auth/UserContext";
+const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
 
 function Navigation({ logout }) {
   const { currentUser } = useContext(UserContext);
@@ -10,8 +11,11 @@ function Navigation({ logout }) {
     return (
       <ul className="navbar-nav me-auto mb-2 mb-lg-0">
         <li className="nav-item">
-          <NavLink className="nav-link" to="./writespace">
-            Writespace
+          <NavLink
+            className="nav-link"
+            to={`/${currentUser.username}/writespaces`}
+          >
+            Writespaces
           </NavLink>
         </li>
         <li className="nav-item">
@@ -32,17 +36,17 @@ function Navigation({ logout }) {
     return (
       <ul className="navbar-nav me-auto mb-2 mb-lg-0">
         <li className="nav-item">
-          <NavLink className="nav-link" to="./writespace">
+          <NavLink className="nav-link" to={`/writespace`}>
             Writespace
           </NavLink>
         </li>
         <li className="nav-item">
-          <NavLink className="nav-link" to="/signup">
+          <NavLink className="nav-link" to={`/signup`}>
             Sign Up
           </NavLink>
         </li>
         <li className="nav-item">
-          <NavLink className="nav-link" to="/login">
+          <NavLink className="nav-link" to={`/login`}>
             Log In
           </NavLink>
         </li>

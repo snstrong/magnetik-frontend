@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import MagnetikApi from "../api/MagnetikApi";
 import { Stage, Group, Layer, Text, Rect } from "react-konva";
 // import { Portal } from "react-konva-utils";
@@ -24,11 +24,11 @@ import "./Writespace.css";
 
 function Writespace() {
   const { currentUser } = useContext(UserContext);
-
+  const { username, writespaceId } = useParams();
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
+  const history = useHistory();
 
   // State for existing writespace
-  const { writespaceId } = useParams();
   const [writespace, setWritespace] = useState(null);
 
   const INITIAL_KONVA_STYLES = {
@@ -44,6 +44,7 @@ function Writespace() {
   const [reset, setReset] = useState(false);
   const [alert, setAlert] = useState(null);
   const [displayForm, setDisplayForm] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
 
   function calcTileSize(wordLength) {
     return wordLength <= 2
@@ -173,8 +174,28 @@ function Writespace() {
   }
 
   useEffect(
+    function authorize() {
+      try {
+        if (username && currentUser.username !== username) {
+          throw new Error("Unauthorized.");
+        }
+        setAuthorized(true);
+      } catch (errors) {
+        console.error(errors);
+        history.push("/");
+      }
+      return () => {
+        setWritespace(null);
+        setWordTiles(null);
+      };
+    },
+    [currentUser, username]
+  );
+
+  useEffect(
     function loadWritespaceData() {
       // console.debug("Writespace useEffect loadWordList wordTiles=", wordTiles);
+
       if (writespaceId) {
         async function getWritespace() {
           let res = await getExistingWritespace();
@@ -242,72 +263,75 @@ function Writespace() {
     }
   }
 
-  if (!wordTiles) return <h1>Loading...</h1>;
-
-  return (
-    <div className="Writespace">
-      {writespace ? writespace.title && <h1>{writespace.title}</h1> : null}
-      <div
-        className="WritespaceToolbar p-3 container-fluid"
-        style={{ backgroundColor: "#8da5a5" }}
-      >
-        <div className="row justify-content-center">
-          {currentUser && (
+  if (!wordTiles || !authorized) return <h1>Loading...</h1>;
+  if (authorized) {
+    return (
+      <div className="Writespace">
+        {writespace ? writespace.title && <h1>{writespace.title}</h1> : null}
+        <div
+          className="WritespaceToolbar p-3 container-fluid"
+          style={{ backgroundColor: "#8da5a5" }}
+        >
+          <div className="row justify-content-center">
+            {currentUser && (
+              <button
+                className="btn btn-primary col-6 col-sm-4 col-md-3 col-lg-2"
+                onClick={() => {
+                  setDisplayForm(true);
+                }}
+              >
+                Save
+              </button>
+            )}
+            {!writespaceId && (
+              <button
+                type="reset"
+                className="btn btn-secondary col-6 col-sm-4 col-md-3 col-lg-2"
+                onClick={() => setReset(true)}
+              >
+                Reset
+              </button>
+            )}
             <button
-              className="btn btn-primary col-6 col-sm-4 col-md-3 col-lg-2"
-              onClick={() => {
-                setDisplayForm(true);
-              }}
+              type="reset"
+              className="btn btn-light col-6 col-sm-4 col-md-3 col-lg-2"
+              onClick={scramble}
             >
-              Save
+              Scramble
             </button>
+          </div>
+          {displayForm && (
+            <NewWritespaceForm
+              createNewWritespace={createNewWritespace}
+              hide={displayForm}
+            />
           )}
-          <button
-            type="reset"
-            className="btn btn-secondary col-6 col-sm-4 col-md-3 col-lg-2"
-            onClick={() => setReset(true)}
-          >
-            Reset
-          </button>
-          <button
-            type="reset"
-            className="btn btn-light col-6 col-sm-4 col-md-3 col-lg-2"
-            onClick={scramble}
-          >
-            Scramble
-          </button>
+          {alert && (
+            <Alert
+              messages={["Currently unavailable. Please try again later."]}
+            ></Alert>
+          )}
         </div>
-        {displayForm && (
-          <NewWritespaceForm
-            createNewWritespace={createNewWritespace}
-            hide={displayForm}
-          />
-        )}
-        {alert && (
-          <Alert
-            messages={["Currently unavailable. Please try again later."]}
-          ></Alert>
-        )}
-      </div>
-      <div className="Stage-container">
-        <div className="Stage-wrapper">
-          <Stage
-            width={konvaStyles.stageWidth}
-            height={konvaStyles.stageHeight}
-          >
-            <Layer>
-              <Rect
-                fill={konvaStyles.stageBgFill || "#b6bbc2"}
-                width={konvaStyles.stageWidth}
-                height={konvaStyles.stageHeight}
-              />
-              {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
-            </Layer>
-          </Stage>
+        <div className="Stage-container">
+          <div className="Stage-wrapper">
+            <Stage
+              width={konvaStyles.stageWidth}
+              height={konvaStyles.stageHeight}
+            >
+              <Layer>
+                <Rect
+                  fill={konvaStyles.stageBgFill || "#b6bbc2"}
+                  width={konvaStyles.stageWidth}
+                  height={konvaStyles.stageHeight}
+                />
+                {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
+              </Layer>
+            </Stage>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default Writespace;

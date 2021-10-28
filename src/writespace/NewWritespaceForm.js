@@ -42,12 +42,15 @@ const NewWritespaceForm = ({ createNewWritespace, hide }) => {
   }
 
   return (
-    <div className="NewWritespaceForm">
+    <div className="NewWritespaceForm row justify-content-center">
       {formErrors.length ? <Alert type="danger" messages={formErrors} /> : null}
 
-      <form className="form-inline" onSubmit={handleSubmit}>
-        <label className="mb-2" htmlFor="title">
-          Give your writespace a title...
+      <form
+        className="form-inline col-12 col-md-8 col-lg-6"
+        onSubmit={handleSubmit}
+      >
+        <label className="mb-2 mt-3" htmlFor="title">
+          Give your new writespace a title...
         </label>
         <input
           type="text"
