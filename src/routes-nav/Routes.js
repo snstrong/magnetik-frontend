@@ -22,18 +22,31 @@ function Routes({ login, register }) {
         <Route exact path="/">
           <Homepage />
         </Route>
+
         <Route exact path="/login">
           <LoginForm login={login} />
         </Route>
+
         <Route exact path="/signup">
           <RegisterForm register={register} />
         </Route>
+
         <ProtectedRoute exact path="/profile">
           <ProfileForm />
         </ProtectedRoute>
+
         <Route exact path="/writespace">
           <Writespace />
         </Route>
+
+        <ProtectedRoute exact path="/:username/writespaces">
+          <h1>Writespaces</h1>
+        </ProtectedRoute>
+
+        <ProtectedRoute exact path="/:username/writespaces/:writespaceId">
+          <Writespace />
+        </ProtectedRoute>
+
         <Redirect to="/" />
       </Switch>
     </div>

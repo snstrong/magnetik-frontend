@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from "react";
+import { useParams } from "react-router-dom";
 import MagnetikApi from "../api/MagnetikApi";
 import { Stage, Group, Layer, Text, Rect } from "react-konva";
 // import { Portal } from "react-konva-utils";
@@ -22,6 +23,7 @@ import "./Writespace.css";
  */
 
 function Writespace() {
+  const { writespaceId } = useParams();
   const { currentUser } = useContext(UserContext);
   // get writespace id somehow and use to set/retrieve tile data
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
@@ -189,20 +191,26 @@ function Writespace() {
         width: konvaStyles.stageWidth,
         height: konvaStyles.stageHeight,
       };
-      let res = await MagnetikApi.createWritespace(writespaceData);
-      return { success: true };
-    } catch (err) {
-      console.error(err);
-      return { success: false };
+
+      let created = await MagnetikApi.createWritespace(writespaceData);
+      let populated = await MagnetikApi.populateWritespace({
+        writespaceId: created.writespace.writespaceId,
+        username: created.writespace.username,
+        wordTiles: { ...JSON.parse(wordTiles) },
+      });
+      setDisplayForm(false);
+      return { ...populated };
+    } catch (errors) {
+      console.error(errors);
+      return { errors };
     }
   }
 
   if (!wordTiles) return <h1>Loading...</h1>;
 
-  window.addEventListener("resize", (evt) => {});
-
   return (
     <div className="Writespace">
+      {writespaceId && <h1>{currentUser.username}'s writespace</h1>}
       <div
         className="WritespaceToolbar p-3 container-fluid"
         style={{ backgroundColor: "#8da5a5" }}
@@ -212,12 +220,12 @@ function Writespace() {
             <button
               className="btn btn-primary col-6 col-sm-4 col-md-3 col-lg-2"
               onClick={() => {
-                setAlert(true);
+                // setAlert(true);
                 setDisplayForm(true);
-                setTimeout(() => {
-                  setAlert(false);
-                  setDisplayForm(false);
-                }, 2000);
+                // setTimeout(() => {
+                //   setAlert(false);
+                //   setDisplayForm(false);
+                // }, 3000);
               }}
             >
               Save
@@ -261,7 +269,6 @@ function Writespace() {
                 fill={konvaStyles.stageBgFill || "#b6bbc2"}
                 width={konvaStyles.stageWidth}
                 height={konvaStyles.stageHeight}
-                opacity={0.95}
               />
               {wordTiles && renderWordTiles(JSON.parse(wordTiles))}
             </Layer>

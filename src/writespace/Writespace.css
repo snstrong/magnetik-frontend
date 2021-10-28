@@ -8,10 +8,15 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  height: max-content;
+  height: 1000px;
 }
 
 .Stage-wrapper {
   width: fit-content;
-  height: max-content;
+  height: 1000px;
+}
+
+.WritespaceToolbar {
+  position: sticky;
+  background-color: #8da5a5;
 }

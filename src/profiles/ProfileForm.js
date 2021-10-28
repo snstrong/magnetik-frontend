@@ -22,7 +22,7 @@ import UserContext from "../auth/UserContext";
 
 function ProfileForm() {
   const { currentUser, setCurrentUser } = useContext(UserContext);
-  console.debug("User:", currentUser);
+  // console.debug("User:", currentUser);
   const [formData, setFormData] = useState({
     firstName: currentUser.firstName,
     lastName: currentUser.lastName,

@@ -71,14 +71,35 @@ class MagnetikApi {
     return res.wordList;
   }
 
+  /** Create new writespace.
+   * @param writespaceData {
+        title,
+        username,
+        width,
+        height,
+      }
+    * Returns {username, writespaceId}
+   */
   static async createWritespace(writespaceData) {
     let res = await this.request(
       `writespace/${writespaceData.username}`,
       writespaceData,
       "post"
     );
-    console.debug("res=", res);
-    debugger;
+    return res;
+  }
+
+  /** Populate writespace_words
+   * @param writespaceData {writespaceId, username, wordTiles}
+   * Returns {success: true, inserted: 1, writespaceId}
+   */
+
+  static async populateWritespace(writespaceData) {
+    let res = await this.request(
+      `writespace/${writespaceData.username}/${writespaceData.writespaceId}`,
+      writespaceData,
+      "post"
+    );
     return res;
   }
 }
