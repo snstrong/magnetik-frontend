@@ -26,6 +26,7 @@ function App() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useLocalStorage("token");
+  const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
 
   useEffect(
     function loadUserInfo() {
@@ -76,6 +77,7 @@ function App() {
   function logout() {
     setCurrentUser(null);
     setToken(null);
+    setWordTiles(null);
   }
 
   if (!isLoaded) return <h1>Loading...</h1>;

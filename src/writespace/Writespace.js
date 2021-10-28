@@ -23,10 +23,13 @@ import "./Writespace.css";
  */
 
 function Writespace() {
-  const { writespaceId } = useParams();
   const { currentUser } = useContext(UserContext);
-  // get writespace id somehow and use to set/retrieve tile data
+
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
+
+  // State for existing writespace
+  const { writespaceId } = useParams();
+  const [writespace, setWritespace] = useState(null);
 
   const INITIAL_KONVA_STYLES = {
     stageBgFill: "#d4dddd",
@@ -54,12 +57,16 @@ function Writespace() {
     return Math.floor(Math.random() * (max - min) + min);
   }
 
-  function makeTileObj({ id, word }) {
+  function makeTileObj({ id, wordId, word, x, y }) {
     return {
       word: word,
-      id: id,
-      x: tileCoord(Math.min(window.innerWidth, konvaStyles.stageWidth)),
-      y: tileCoord(Math.min(window.innerHeight, konvaStyles.stageHeight)),
+      id: id || wordId,
+      x:
+        parseInt(x) ||
+        tileCoord(Math.min(window.innerWidth, konvaStyles.stageWidth)),
+      y:
+        parseInt(y) ||
+        tileCoord(Math.min(window.innerHeight, konvaStyles.stageHeight)),
       width: calcTileSize(word.length),
       isDragging: false,
     };
@@ -72,7 +79,7 @@ function Writespace() {
 
   const handleDragStart = (e) => {
     const id = e.target.id();
-    console.debug("Dragging ", JSON.parse(wordTiles)[id].word);
+    // console.debug("Dragging ", JSON.parse(wordTiles)[id].word);
     const tiles = {
       ...JSON.parse(wordTiles),
       [id]: {
@@ -87,13 +94,13 @@ function Writespace() {
     const id = e.target.id();
     const newX = e.target.x();
     const newY = e.target.y();
-    console.debug("Dropping ", JSON.parse(wordTiles)[id].word);
-    console.debug(
-      "Old x,y=",
-      JSON.parse(wordTiles)[id].x,
-      JSON.parse(wordTiles)[id].y
-    );
-    console.debug("New x,y=", newX, newY);
+    // console.debug("Dropping ", JSON.parse(wordTiles)[id].word);
+    // console.debug(
+    //   "Old x,y=",
+    //   JSON.parse(wordTiles)[id].x,
+    //   JSON.parse(wordTiles)[id].y
+    // );
+    // console.debug("New x,y=", newX, newY);
     const tiles = {
       ...JSON.parse(wordTiles),
       [id]: {
@@ -104,7 +111,7 @@ function Writespace() {
       },
     };
     let res = await setNewXY(tiles);
-    console.log("setNewXY returned ", res);
+    // console.log("setNewXY returned ", res);
   }
 
   function renderWordTiles(tiles) {
@@ -142,7 +149,7 @@ function Writespace() {
     return tileArr;
   }
 
-  async function fetchWordList() {
+  async function getNewWordList() {
     try {
       let wordList = await MagnetikApi.getWordList();
       return wordList;
@@ -151,22 +158,51 @@ function Writespace() {
     }
   }
 
+  async function getExistingWritespace() {
+    let requestData = {
+      username: currentUser.username,
+      writespaceId: writespaceId,
+    };
+    try {
+      let res = await MagnetikApi.getWritespace(requestData);
+      // console.log("res=", res);
+      return res;
+    } catch (errors) {
+      console.error(`Error getting writespace:`, errors);
+    }
+  }
+
   useEffect(
-    function loadWordList() {
+    function loadWritespaceData() {
       // console.debug("Writespace useEffect loadWordList wordTiles=", wordTiles);
-      if (!wordTiles || reset === true) {
-        fetchWordList().then((res) => {
+      if (writespaceId) {
+        async function getWritespace() {
+          let res = await getExistingWritespace();
+          // console.log(res.writespaceData);
+          setWritespace({ ...res.writespace });
           let tiles = {};
-          for (let wordObj of res) {
-            let tile = makeTileObj(wordObj);
-            tiles[wordObj["id"]] = tile;
+          for (let entry of res.writespaceData) {
+            tiles[entry.wordId] = makeTileObj(entry);
           }
+          // console.debug(tiles);
           setWordTiles(JSON.stringify({ ...tiles }));
-        });
+        }
+        getWritespace();
+      } else {
+        if (!wordTiles || reset === true) {
+          getNewWordList().then((res) => {
+            let tiles = {};
+            for (let wordObj of res) {
+              let tile = makeTileObj(wordObj);
+              tiles[wordObj["id"]] = tile;
+            }
+            setWordTiles(JSON.stringify({ ...tiles }));
+          });
+        }
+        setReset(false);
       }
-      setReset(false);
     },
-    [reset]
+    [reset, writespaceId, currentUser]
   );
 
   function scramble() {
@@ -210,7 +246,7 @@ function Writespace() {
 
   return (
     <div className="Writespace">
-      {writespaceId && <h1>{currentUser.username}'s writespace</h1>}
+      {writespace ? writespace.title && <h1>{writespace.title}</h1> : null}
       <div
         className="WritespaceToolbar p-3 container-fluid"
         style={{ backgroundColor: "#8da5a5" }}
@@ -220,12 +256,7 @@ function Writespace() {
             <button
               className="btn btn-primary col-6 col-sm-4 col-md-3 col-lg-2"
               onClick={() => {
-                // setAlert(true);
                 setDisplayForm(true);
-                // setTimeout(() => {
-                //   setAlert(false);
-                //   setDisplayForm(false);
-                // }, 3000);
               }}
             >
               Save

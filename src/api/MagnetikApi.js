@@ -102,6 +102,16 @@ class MagnetikApi {
     );
     return res;
   }
+
+  /** Get data for one writespace.
+   * @param queryData {username, writespaceId}
+   * Returns {writespace, writespaceData}
+   */
+
+  static async getWritespace({ username, writespaceId }) {
+    let res = await this.request(`writespace/${username}/${writespaceId}`);
+    return res;
+  }
 }
 
 export default MagnetikApi;

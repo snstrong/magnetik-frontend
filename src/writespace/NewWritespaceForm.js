@@ -30,7 +30,7 @@ const NewWritespaceForm = ({ createNewWritespace, hide }) => {
     if (res.success) {
       console.log(
         "Redirecting... ",
-        `/writespaces/${res.username}/${res.writespaceId}`
+        `/${res.username}/writespaces/${res.writespaceId}`
       );
       history.push(`/${res.username}/writespaces/${res.writespaceId}`);
     } else if (res.errors) {
