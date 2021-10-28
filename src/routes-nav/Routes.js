@@ -5,6 +5,7 @@ import RegisterForm from "../auth/RegisterForm";
 import LoginForm from "../auth/LoginForm";
 import ProfileForm from "../profiles/ProfileForm";
 import Writespace from "../writespace/Writespace";
+import WritespaceList from "../writespace/WritespaceList";
 import ProtectedRoute from "./ProtectedRoute";
 
 /** Site-wide routes */
@@ -40,7 +41,7 @@ function Routes({ login, register }) {
         </Route>
 
         <ProtectedRoute exact path="/:username/writespaces">
-          <h1>Writespaces</h1>
+          <WritespaceList />
         </ProtectedRoute>
 
         <ProtectedRoute exact path="/:username/writespaces/:writespaceId">

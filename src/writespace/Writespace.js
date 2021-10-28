@@ -41,7 +41,7 @@ function Writespace() {
     stageHeight: 1000,
   };
   const [konvaStyles, setKonvaStyles] = useState({ ...INITIAL_KONVA_STYLES });
-  const [reset, setReset] = useState(false);
+  const [reset, setReset] = useState();
   const [alert, setAlert] = useState(null);
   const [displayForm, setDisplayForm] = useState(false);
   const [authorized, setAuthorized] = useState(false);
@@ -210,7 +210,7 @@ function Writespace() {
         }
         getWritespace();
       } else {
-        if (!wordTiles || reset === true) {
+        if (!wordTiles || reset === true || (currentUser && !writespaceId)) {
           getNewWordList().then((res) => {
             let tiles = {};
             for (let wordObj of res) {
