@@ -1,0 +1,35 @@
+.WritespaceList {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background-color: #8da5a5;
+  height: 100%;
+  min-height: 95vh;
+}
+
+.WritespaceList-wrapper {
+  width: 100%;
+  max-width: 800px;
+  background-color: #d4dddd;
+  padding: 20px;
+  border-radius: 2%;
+  height: max-content;
+}
+
+.WritespaceList-ul,
+.WritespaceList-ul > li,
+.WritespaceList-ul > li > a {
+  text-align: left;
+}
+
+.WritespaceList-ul > li > a {
+  font-size: 1.25rem;
+}
+
+.WritespaceList-ul {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.WritespaceList-ul:hover {
+  background-color: rgb(255, 255, 255);
+}

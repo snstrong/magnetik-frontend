@@ -37,7 +37,6 @@ function App() {
             let { username } = jwt.decode(JSON.parse(token));
             MagnetikApi.token = JSON.parse(token);
             let currUser = await MagnetikApi.getCurrentUser(username);
-
             setCurrentUser({ ...currUser });
           } catch (err) {
             console.error("App loadUserInfo: problem loading", err);

@@ -5,7 +5,6 @@ import { Stage, Group, Layer, Text, Rect } from "react-konva";
 // import { Portal } from "react-konva-utils";
 import useLocalStorage from "../hooks/useLocalStorage";
 import UserContext from "../auth/UserContext";
-import Alert from "../common/Alert";
 import NewWritespaceForm from "./NewWritespaceForm";
 import "./Writespace.css";
 
@@ -23,7 +22,7 @@ import "./Writespace.css";
  */
 
 function Writespace() {
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, setCurrentUser } = useContext(UserContext);
   const { username, writespaceId } = useParams();
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
   const history = useHistory();
@@ -42,7 +41,6 @@ function Writespace() {
   };
   const [konvaStyles, setKonvaStyles] = useState({ ...INITIAL_KONVA_STYLES });
   const [reset, setReset] = useState();
-  const [alert, setAlert] = useState(null);
   const [displayForm, setDisplayForm] = useState(false);
   const [authorized, setAuthorized] = useState(false);
 
@@ -54,7 +52,7 @@ function Writespace() {
 
   function tileCoord(dimension) {
     let min = 30;
-    let max = dimension;
+    let max = dimension - 30;
     return Math.floor(Math.random() * (max - min) + min);
   }
 
@@ -62,20 +60,11 @@ function Writespace() {
     return {
       word: word,
       id: id || wordId,
-      x:
-        parseInt(x) ||
-        tileCoord(Math.min(window.innerWidth, konvaStyles.stageWidth)),
-      y:
-        parseInt(y) ||
-        tileCoord(Math.min(window.innerHeight, konvaStyles.stageHeight)),
+      x: parseInt(x) || tileCoord(konvaStyles.stageWidth),
+      y: parseInt(y) || tileCoord(konvaStyles.stageHeight),
       width: calcTileSize(word.length),
       isDragging: false,
     };
-  }
-
-  async function setNewXY(tiles = {}) {
-    let res = await setWordTiles(JSON.stringify({ ...tiles }));
-    return true;
   }
 
   const handleDragStart = (e) => {
@@ -111,8 +100,7 @@ function Writespace() {
         isDragging: false,
       },
     };
-    let res = await setNewXY(tiles);
-    // console.log("setNewXY returned ", res);
+    setWordTiles(JSON.stringify({ ...tiles }));
   }
 
   function renderWordTiles(tiles) {
@@ -232,8 +220,8 @@ function Writespace() {
     for (let id in tiles) {
       tiles[id] = {
         ...JSON.parse(wordTiles)[id],
-        x: tileCoord(Math.min(window.innerWidth, konvaStyles.stageWidth)),
-        y: tileCoord(Math.min(window.innerHeight, konvaStyles.stageHeight)),
+        x: tileCoord(konvaStyles.stageWidth),
+        y: tileCoord(konvaStyles.stageHeight),
       };
     }
     setWordTiles(JSON.stringify({ ...tiles }));
@@ -256,6 +244,11 @@ function Writespace() {
         wordTiles: { ...JSON.parse(wordTiles) },
       });
       setDisplayForm(false);
+      setCurrentUser({
+        ...currentUser,
+        writespaces: [...currentUser.writespaces, { ...created.writespace }],
+      });
+
       return { ...populated };
     } catch (errors) {
       console.error(errors);
@@ -267,12 +260,16 @@ function Writespace() {
   if (authorized) {
     return (
       <div className="Writespace">
-        {writespace ? writespace.title && <h1>{writespace.title}</h1> : null}
+        {writespace
+          ? writespace.title && (
+              <h1 className="pt-3 mb-0">{writespace.title}</h1>
+            )
+          : null}
         <div
-          className="WritespaceToolbar p-3 container-fluid"
+          className="WritespaceToolbar container-fluid"
           style={{ backgroundColor: "#8da5a5" }}
         >
-          <div className="row justify-content-center">
+          <div className="row justify-content-center pb-4 pt-4">
             {currentUser && (
               <button
                 className="btn btn-primary col-6 col-sm-4 col-md-3 col-lg-2"
@@ -280,7 +277,7 @@ function Writespace() {
                   setDisplayForm(true);
                 }}
               >
-                Save
+                Save As
               </button>
             )}
             {!writespaceId && (
@@ -289,7 +286,7 @@ function Writespace() {
                 className="btn btn-secondary col-6 col-sm-4 col-md-3 col-lg-2"
                 onClick={() => setReset(true)}
               >
-                Reset
+                Get New Words
               </button>
             )}
             <button
@@ -297,7 +294,7 @@ function Writespace() {
               className="btn btn-light col-6 col-sm-4 col-md-3 col-lg-2"
               onClick={scramble}
             >
-              Scramble
+              Rearrange
             </button>
           </div>
           {displayForm && (
@@ -305,11 +302,6 @@ function Writespace() {
               createNewWritespace={createNewWritespace}
               hide={displayForm}
             />
-          )}
-          {alert && (
-            <Alert
-              messages={["Currently unavailable. Please try again later."]}
-            ></Alert>
           )}
         </div>
         <div className="Stage-container">

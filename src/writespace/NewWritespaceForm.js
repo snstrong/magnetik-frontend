@@ -4,7 +4,7 @@ import Alert from "../common/Alert";
 
 /** Form for creating new writespace. */
 
-const NewWritespaceForm = ({ createNewWritespace, hide }) => {
+const NewWritespaceForm = ({ createNewWritespace }) => {
   const [formData, setFormData] = useState({ title: "" });
   const [formErrors, setFormErrors] = useState([]);
   const history = useHistory();
@@ -26,7 +26,6 @@ const NewWritespaceForm = ({ createNewWritespace, hide }) => {
       return false;
     }
     let res = await createNewWritespace(formData);
-    console.log(res);
     if (res.success) {
       console.log(
         "Redirecting... ",
