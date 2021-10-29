@@ -27,14 +27,19 @@ const NewWritespaceForm = ({ createNewWritespace }) => {
     }
     let res = await createNewWritespace(formData);
     if (res.success) {
-      console.log(
-        "Redirecting... ",
-        `/${res.username}/writespaces/${res.writespaceId}`
-      );
+      // console.log(
+      //   "Redirecting... ",
+      //   `/${res.username}/writespaces/${res.writespaceId}`
+      // );
       history.push(`/${res.username}/writespaces/${res.writespaceId}`);
     } else if (res.errors) {
       console.error("Create writespace failed", res.errors);
-      setFormErrors([...res.errors]);
+      setTimeout(() => {
+        setFormErrors([...res.errors]);
+        setTimeout(() => {
+          setFormErrors([]);
+        }, 3500);
+      }, 500);
     } else {
       console.log(res);
     }

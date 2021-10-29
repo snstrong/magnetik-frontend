@@ -112,6 +112,20 @@ class MagnetikApi {
     let res = await this.request(`writespace/${username}/${writespaceId}`);
     return res;
   }
+
+  /** Update data for a writespace.
+   * @param writespaceData {writespaceId, username, wordTiles}
+   * Returns {success: true, inserted: 1, writespaceId}
+   */
+
+  static async updateWritespace({ writespaceData }) {
+    let res = await this.request(
+      `writespace/${writespaceData.username}/${writespaceData.writespaceId}`,
+      writespaceData,
+      "put"
+    );
+    return res;
+  }
 }
 
 export default MagnetikApi;

@@ -36,7 +36,7 @@ function LoginForm({ login }) {
     let res = await login(formData);
     if (res.success === true) {
       setFormData(INITIAL_STATE);
-      history.push(`/writespace`);
+      history.push(`/${formData.username}/writespaces`);
     } else {
       console.error("Login failed", res.errors);
       setFormErrors(res.errors);

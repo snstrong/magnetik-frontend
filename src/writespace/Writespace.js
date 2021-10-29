@@ -6,6 +6,7 @@ import { Stage, Group, Layer, Text, Rect } from "react-konva";
 import useLocalStorage from "../hooks/useLocalStorage";
 import UserContext from "../auth/UserContext";
 import NewWritespaceForm from "./NewWritespaceForm";
+import Alert from "../common/Alert";
 import "./Writespace.css";
 
 /** TODO:
@@ -25,6 +26,7 @@ function Writespace() {
   const { currentUser, setCurrentUser } = useContext(UserContext);
   const { username, writespaceId } = useParams();
   const [wordTiles, setWordTiles] = useLocalStorage("wordTiles");
+  const [alerts, setAlerts] = useState([]);
   const history = useHistory();
 
   // State for existing writespace
@@ -154,7 +156,6 @@ function Writespace() {
     };
     try {
       let res = await MagnetikApi.getWritespace(requestData);
-      // console.log("res=", res);
       return res;
     } catch (errors) {
       console.error(`Error getting writespace:`, errors);
@@ -187,7 +188,6 @@ function Writespace() {
       if (writespaceId) {
         async function getWritespace() {
           let res = await getExistingWritespace();
-          // console.log(res.writespaceData);
           setWritespace({ ...res.writespace });
           let tiles = {};
           for (let entry of res.writespaceData) {
@@ -256,6 +256,41 @@ function Writespace() {
     }
   }
 
+  async function saveExistingWritespace() {
+    try {
+      let writespaceData = {
+        writespaceId: writespaceId,
+        username: currentUser.username,
+        wordTiles: { ...JSON.parse(wordTiles) },
+      };
+
+      let updated = await MagnetikApi.updateWritespace({ writespaceData });
+      setAlerts([
+        {
+          type: "success",
+          messages: ["Save successful."],
+          updated: updated,
+        },
+      ]);
+      return updated;
+    } catch (errors) {
+      console.error(errors);
+    }
+  }
+
+  useEffect(() => {
+    if (alerts.length) {
+      setTimeout(() => {
+        setAlerts([]);
+      }, 4000);
+    }
+    if (displayForm) {
+      setTimeout(() => {
+        setDisplayForm(false);
+      }, 10000);
+    }
+  }, [alerts, displayForm]);
+
   if (!wordTiles || !authorized) return <h1>Loading...</h1>;
   if (authorized) {
     return (
@@ -270,11 +305,23 @@ function Writespace() {
           style={{ backgroundColor: "#8da5a5" }}
         >
           <div className="row justify-content-center pb-4 pt-4">
-            {currentUser && (
+            {writespaceId && (
               <button
                 className="btn btn-primary col-6 col-sm-4 col-md-3 col-lg-2"
+                onClick={async () => {
+                  await saveExistingWritespace();
+                }}
+              >
+                Save
+              </button>
+            )}
+            {currentUser && (
+              <button
+                className={`btn ${
+                  writespaceId ? "btn-secondary" : "btn-primary"
+                } col-6 col-sm-4 col-md-3 col-lg-2`}
                 onClick={() => {
-                  setDisplayForm(true);
+                  displayForm ? setDisplayForm(false) : setDisplayForm(true);
                 }}
               >
                 Save As
@@ -303,6 +350,17 @@ function Writespace() {
               hide={displayForm}
             />
           )}
+          {alerts.length
+            ? alerts.map((alert) => {
+                return (
+                  <Alert
+                    type={alert.type}
+                    messages={alert.messages}
+                    key={Math.floor(Math.random() * 10)}
+                  />
+                );
+              })
+            : null}
         </div>
         <div className="Stage-container">
           <div className="Stage-wrapper">
