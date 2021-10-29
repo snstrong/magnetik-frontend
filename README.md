@@ -3,6 +3,8 @@ React frontend for Magnetik webapp
 
 Play magnetic poetry in your browser! Works best on larger screens.
 
+Drag and drop c/o [KonvaJS](https://konvajs.org/).
+
 Backend: [magnetik-backend](https://github.com/snstrong/magnetik-backend)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
