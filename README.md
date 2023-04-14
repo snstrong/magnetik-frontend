@@ -1,8 +1,6 @@
 # Magnetik
 React frontend for Magnetik webapp
 
-Deployment: https://magnetik.surge.sh/
-
 Play magnetic poetry in your browser! Works best on larger screens.
 
 Drag and drop c/o [KonvaJS](https://konvajs.org/).
